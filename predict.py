@@ -9,7 +9,7 @@ import os
 import numpy as np
 import setproctitle
 from models.TransPTS.TransPTS import PTS
-from models.unet.unet_model import UNet
+from models.unet3d.unet_model import UNet
 from collections import OrderedDict
 from utils import read_split_data
 import matplotlib.pyplot as plt
@@ -26,7 +26,9 @@ def predict_one_img(model, filename, result_save_path, device, args):
     img = img.to(device)
     
     with torch.no_grad():
-        output = model(img)     
+        output = model(img, img.shape[2:])   
+        
+        # output = model(img)     
         pred = torch.argmax(output,dim=1).squeeze(0).cpu()
     
         # for i in range(len(pred)):
@@ -49,15 +51,19 @@ def predict_one_img(model, filename, result_save_path, device, args):
 if __name__ == '__main__':
     args = config.args
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cpu")
+    
     # model info
-    model = UNet().to(device)
+    # model = UNet().to(device)
+    model = PTS().to(device)
+    
     
     checkpoint = torch.load(args.checkpoint)
     model.load_state_dict(checkpoint['state_dict'])
 
     # test_log = logger.Test_Logger(save_path,"test_log")
     # data info
-    result_save_path = args.results_dir
+    result_save_path = os.path.join(args.results_dir, 'pred_mask')
     if not os.path.exists(result_save_path):
         os.mkdir(result_save_path)
     

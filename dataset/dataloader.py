@@ -53,12 +53,12 @@ class Random_Crop(object):
         image = sample['image']
         label = sample['label']
        
-        D = random.randint(0, sample['image'].shape[0] - 64)
-        H = random.randint(0, sample['image'].shape[1] - 96)
-        W = random.randint(0, sample['image'].shape[2] - 96)
+        D = random.randint(0, sample['image'].shape[0] - 32)
+        H = random.randint(0, sample['image'].shape[1] - 128)
+        W = random.randint(0, sample['image'].shape[2] - 128)
 
-        image = image[D: D + 64, H: H + 96, W: W + 96]
-        label = label[D: D + 64, H: H + 96, W: W + 96]
+        image = image[D: D + 32, H: H + 128, W: W + 128]
+        label = label[D: D + 32, H: H + 128, W: W + 128]
         
         return {'image': image, 'label': label}
 

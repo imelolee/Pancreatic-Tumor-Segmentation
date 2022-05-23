@@ -12,7 +12,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from models.criterions import *
-from models.unet3d.unet_model import UNet3D
+from models.unet2d.unet_model import UNet2D
 from utils import read_split_data, create_lr_scheduler
 
 BASE = os.getcwd()
@@ -25,18 +25,21 @@ def train(model, optimizer, data_loader, device, epoch, lr_scheduler, writer):
     model.train()
     
     tversky_loss = []    
-    loss_func = TverskyLoss()
+    loss_func = TverskyLoss2d()
     
     data_loader = tqdm(data_loader, file=sys.stdout)
     for step, data in enumerate(data_loader):
         images, targets = data
-        output = model(images.to(device), images.shape[1:])
-        # output = model(images.to(device))
-        
+
         targets = F.one_hot(targets, 2).permute(0, 4, 1, 2, 3).float().to(device)
-        loss = loss_func(output, targets) 
-       
-        tversky_loss.append(loss.cpu().data.item())
+        for slice in range(images.shape[1]):
+            
+            output = model(images[:, slice, ...].to(device))
+            # output = model(images.to(device))
+    
+            loss = loss_func(output, targets[:, :, slice, ...]) 
+        
+            tversky_loss.append(loss.cpu().data.item())
 
 
         data_loader.desc = "[train epoch {}]".format(epoch)
@@ -60,21 +63,21 @@ def valid(model, data_loader, device, epoch, writer):
     model.eval()
 
     tversky_loss = [] 
-    loss_func = TverskyLoss()
+    loss_func = TverskyLoss2d()
     
     with torch.no_grad():
         data_loader = tqdm(data_loader, file=sys.stdout)
-        for step, data in enumerate(data_loader):
+        for step, data in enumerate(data_loader):    
             images, targets = data
-            targets = torch.LongTensor(targets)
-            output = model(images.to(device), images.shape[1:])
-            # output = model(images.to(device))
-            
-        
             targets = F.one_hot(targets, 2).permute(0, 4, 1, 2, 3).float().to(device)
-            loss = loss_func(output, targets) 
-        
-            tversky_loss.append(loss.cpu().data.item())
+            for slice in range(images.shape[1]):
+                
+                output = model(images[:, slice, ...].to(device))
+                # output = model(images.to(device))
+                
+                loss = loss_func(output, targets[:, :, slice, ...]) 
+            
+                tversky_loss.append(loss.cpu().data.item())
 
 
             data_loader.desc = "[valid epoch {}]".format(epoch)
@@ -128,7 +131,7 @@ def main(args):
        
     ''')
 
-    model = UNet3D().to(device)
+    model = UNet2D().to(device)
 
     
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, 

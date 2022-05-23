@@ -3,9 +3,9 @@
 from .unet_parts import *
 
 
-class UNet(nn.Module):
+class UNet2D(nn.Module):
     def __init__(self, n_channels=1, n_classes=2, bilinear=False):
-        super(UNet, self).__init__()
+        super(UNet2D, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.bilinear = bilinear
@@ -26,6 +26,7 @@ class UNet(nn.Module):
 
     def forward(self, x):
         # x:[1, d, h, w]
+        x = x.unsqueeze(1)
         x1 = self.inc(x)        # [1, 64, d, h, w]
         x2 = self.down1(x1)     # [1, 128, d/2, h/2, w/2]
         x3 = self.down2(x2)     # [1, 256, d/4, h/4, w/4]

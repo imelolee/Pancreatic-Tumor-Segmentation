@@ -11,7 +11,7 @@ parser.add_argument('--seed', type=int, default=2021, help='random seed')
 # Train
 parser.add_argument('--num_classes', type=int, default=2)
 parser.add_argument('--epochs', type=int, default=500)
-parser.add_argument('--batch-size', type=int, default=2)
+parser.add_argument('--batch-size', type=int, default=1)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--weight_decay', default=1e-5, type=float)
 parser.add_argument('--amsgrad', default=True, type=bool)

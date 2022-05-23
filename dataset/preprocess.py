@@ -7,21 +7,17 @@ from scipy import ndimage
 import SimpleITK as sitk
 
 data_path = '/home/ligen/pancreas'
-ct_list_file = '/home/ligen/Pancreatic-Tumor-Segmentation/dataset/ct.txt'    
-seg_list_file = '/home/ligen/Pancreatic-Tumor-Segmentation/dataset/seg.txt'
-ct_save_path = '/home/ligen/Pancreatic-Tumor-Segmentation/data/CT'
-seg_save_path = '/home/ligen/Pancreatic-Tumor-Segmentation/data/SEG'
+ct_list_file = 'dataset/ct.txt'    
+seg_list_file = 'dataset/seg.txt'
 
-# ct_train_file = '/home/ligen/Pancreatic-Tumor-Segmentation/dataset/train/ct.txt'
-# seg_train_file = '/home/ligen/Pancreatic-Tumor-Segmentation/dataset/train/seg.txt'
-# ct_train_save_path = '/home/ligen/Pancreatic-Tumor-Segmentation/data/train/CT'
-# seg_train_save_path = '/home/ligen/Pancreatic-Tumor-Segmentation/data/train/SEG'
+# ct_train_file = 'dataset/train/ct.txt'
+# seg_train_file = 'dataset/train/seg.txt'
 
-ct_test_file = '/home/ligen/Pancreatic-Tumor-Segmentation/dataset/val/ct.txt'
-seg_test_file = '/home/ligen/Pancreatic-Tumor-Segmentation/dataset/val/seg.txt'
-ct_test_save_path = '/home/ligen/Pancreatic-Tumor-Segmentation/data/test/CT'
-seg_test_save_path = '/home/ligen/Pancreatic-Tumor-Segmentation/data/test/SEG'
 
+ct_train_file = 'dataset/val/ct.txt'
+seg_train_file = 'dataset/val/seg.txt'
+ct_save_path = 'data/CT'
+seg_save_path = 'data/SEG'
 
 
 def load_itk_image(filename):
@@ -212,12 +208,12 @@ def preprocess():
         
 def crop_img_slice():
     ct_list=[]
-    with open(ct_test_file,'r') as f:
+    with open(ct_train_file,'r') as f:
         for line in f:
             ct_list.append(line.strip('\n'))
             
     seg_list=[]
-    with open(seg_test_file,'r') as f:
+    with open(seg_train_file,'r') as f:
         for line in f:
             seg_list.append(line.strip('\n'))
     
@@ -239,24 +235,24 @@ def crop_img_slice():
         print('[{}]{} have {} slices'.format(img_idx, seg_list[img_idx],len(keep_slice_list)))
         
         first_slice = keep_slice_list[0]
-        # seg_img = expand_slice(seg_img)
-        seg_img = seg_img[first_slice:first_slice+64, ...]
+        last_slice = keep_slice_list[-1]
         
-        save_itk_image(os.path.join(seg_test_save_path, seg_save_name), seg_img)
+        # seg_img = expand_slice(seg_img)
+        seg_img = seg_img[first_slice:last_slice+1, ...]
+        
+        save_itk_image(os.path.join(seg_save_path, seg_save_name), seg_img)
      
         ct_img, _, ct_spacing = load_itk_image(filename=ct_list[img_idx])
         ct_save_name = ct_list[img_idx].split('/')[-1]
         
         # ct_img = expand_slice(ct_img)
-        ct_img = ct_img[first_slice:first_slice+64, ...]
+        ct_img = ct_img[first_slice:last_slice+1, ...]
         
         if ct_img.shape != seg_img.shape:
             print('{} shape not equal, ignored.'.format(ct_save_name))
             continue
       
-        save_itk_image(os.path.join(ct_test_save_path, ct_save_name), ct_img)
-    
-    
+        save_itk_image(os.path.join(ct_save_path, ct_save_name), ct_img)
 
 if __name__ == '__main__':
     # generate_filename_list()

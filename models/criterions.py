@@ -43,7 +43,7 @@ class FocalLoss(nn.Module):
         return focal_loss
 
 
-class TverskyLoss(nn.Module):
+class TverskyLoss3d(nn.Module):
     
     def __init__(self):
         super().__init__()
@@ -57,6 +57,24 @@ class TverskyLoss(nn.Module):
         for i in range(pred.size(1)):
             dice += (pred[:,i] * target[:,i]).sum(dim=1).sum(dim=1).sum(dim=1) / ((pred[:,i] * target[:,i]).sum(dim=1).sum(dim=1).sum(dim=1)+
                         0.3 * (pred[:,i] * (1 - target[:,i])).sum(dim=1).sum(dim=1).sum(dim=1) + 0.7 * ((1 - pred[:,i]) * target[:,i]).sum(dim=1).sum(dim=1).sum(dim=1) + smooth)
+
+        dice = dice / pred.size(1)
+        return torch.clamp((1 - dice).mean(), 0, 2)
+
+class TverskyLoss2d(nn.Module):
+    
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, pred, target):
+
+        smooth = 1
+
+        dice = 0.
+
+        for i in range(pred.size(1)):
+            dice += (pred[:,i] * target[:,i]).sum(dim=1).sum(dim=1) / ((pred[:,i] * target[:,i]).sum(dim=1).sum(dim=1)+
+                        0.3 * (pred[:,i] * (1 - target[:,i])).sum(dim=1).sum(dim=1) + 0.7 * ((1 - pred[:,i]) * target[:,i]).sum(dim=1).sum(dim=1) + smooth)
 
         dice = dice / pred.size(1)
         return torch.clamp((1 - dice).mean(), 0, 2)
